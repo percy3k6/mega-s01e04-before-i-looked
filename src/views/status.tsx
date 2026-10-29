@@ -1,6 +1,8 @@
+import type { RigConfig } from '../config.js';
+import { nightCounts, readNight } from '../digest/readNight.js';
 import type { Status } from '../status.js';
 
-export function StatusBoard({ status }: { status: Status }) {
+export function StatusBoard({ status, config }: { status: Status; config: RigConfig }) {
   return (
     <>
       <h1>status</h1>
@@ -19,9 +21,18 @@ export function StatusBoard({ status }: { status: Status }) {
         <p class="mute">nothing in runs/</p>
       ) : (
         <ul>
-          {status.nights.map((n) => (
-            <li>{n}</li>
-          ))}
+          {status.nights.map((n) => {
+            const digest = readNight(config.runsDir, n);
+            const counts = digest ? nightCounts(digest) : { ok: 0, retry: 0, fail: 0 };
+            return (
+              <li>
+                <a href={`/digest/${n}`}>{n}</a>{' '}
+                <span class="mute">
+                  {counts.ok} ok · {counts.retry} retry · {counts.fail} fail
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
     </>
